@@ -2,7 +2,8 @@ require("dotenv").config();
 const keys = require("./keys.js");
 const inquirer = require("inquirer");
 const axios = require("axios");
-// const spotify = new Spotify(keys.spotify);
+const Spotify = require("node-spotify-api");
+const spotify = new Spotify(keys.spotify);
 
 console.log("Welcome to LIRI!\n");
 
@@ -12,27 +13,21 @@ inquirer
       name: "command",
       type: "list",
       message: "What would you like to do today?",
-      choices: [
-        "concert-this",
-        "spotify-this-song",
-        "movie-this",
-        "do-what-it-says"
-      ]
+      choices: ["Search a band / artist", "Search a song", "movie-this"]
     }
   ])
   .then(answers => {
     switch (answers.command) {
-      case "concert-this":
+      case "Search a band / artist":
         concertThis();
         break;
 
-      case "View Low Inventory":
+      case "Search a song":
+        spotifyThis();
         break;
 
       case "Add to Inventory":
-        break;
-
-      case "Add New Product":
+        movieThis();
         break;
 
       default:
@@ -61,7 +56,39 @@ function concertThis() {
           console.log(data);
         })
         .catch(err => {
+          console.log("===== ERROR ========================================");
           throw err;
         });
     });
 }
+
+function spotifyThis() {
+  inquirer
+    .prompt([
+      {
+        name: "song",
+        message: "What is the name of the song?",
+        type: "input"
+      }
+    ])
+    .then(answers => {
+      spotify
+        .search({
+          type: "track",
+          query: answers.song,
+          limit: 10
+        })
+        .then(data => {
+          let song = data.tracks.items[0];
+          console.log("Artist:       " + song.artists[0].name);
+          console.log("Song:         " + song.name);
+          console.log("Preview Link: " + song.preview_url);
+          console.log("Album:        " + song.album.name);
+        })
+        .catch(err => {
+          throw err;
+        });
+    });
+}
+
+function movieThis() {}
