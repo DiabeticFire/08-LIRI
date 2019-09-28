@@ -5,7 +5,7 @@ const axios = require("axios");
 const Spotify = require("node-spotify-api");
 const spotify = new Spotify(keys.spotify);
 
-console.log("Welcome to LIRI!\n");
+console.log("\nWelcome to LIRI!\n");
 
 inquirer
   .prompt([
@@ -13,7 +13,7 @@ inquirer
       name: "command",
       type: "list",
       message: "What would you like to do today?",
-      choices: ["Search a band / artist", "Search a song", "movie-this"]
+      choices: ["Search a band / artist", "Search a song", "Search a movie"]
     }
   ])
   .then(answers => {
@@ -26,7 +26,7 @@ inquirer
         spotifyThis();
         break;
 
-      case "Add to Inventory":
+      case "Search a movie":
         movieThis();
         break;
 
@@ -91,4 +91,36 @@ function spotifyThis() {
     });
 }
 
-function movieThis() {}
+function movieThis() {
+  inquirer
+    .prompt([
+      {
+        name: "movie",
+        message: "What is the name of the movie?",
+        type: "input"
+      }
+    ])
+    .then(answers => {
+      let queryURL =
+        "http://www.omdbapi.com/?apikey=" +
+        keys.omdb.id +
+        "&type=movie&t=" +
+        answers.movie;
+      axios
+        .get(queryURL)
+        .then(data => {
+          console.log("Title:           " + data.data.Title);
+          console.log("Release Year:    " + data.data.Year);
+          console.log("IMDB Rating:     " + data.data.imdbRating);
+          console.log("Rotten Tomatoes: " + data.data.Ratings[1].Value);
+          console.log("Country:         " + data.data.Country);
+          console.log("Language:        " + data.data.Language);
+          console.log("Plot:            " + data.data.Plot);
+          console.log("Actors:          " + data.data.Actors);
+        })
+        .catch(err => {
+          console.log("===== ERROR ========================================");
+          throw err;
+        });
+    });
+}
